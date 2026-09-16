@@ -1,0 +1,21 @@
+# Raw and processed data
+input/
+data/
+!data/README.md
+data_processed_v10/
+output_v10/
+
+# R / RStudio
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
