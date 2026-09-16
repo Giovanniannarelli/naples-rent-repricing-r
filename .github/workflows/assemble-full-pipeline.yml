@@ -24,11 +24,23 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p full_pipeline
-          shopt -s nullglob
-          for payload in payloads/*.gz.b64; do
-            filename="$(basename "$payload" .gz.b64)"
-            base64 --decode --ignore-garbage "$payload" | gzip --decompress > "full_pipeline/$filename"
-          done
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, gzip, re
+
+          for payload in sorted(Path('payloads').glob('*.gz.b64')):
+              name = payload.name[:-7]
+              raw = payload.read_bytes()
+              clean = re.sub(rb'[^A-Za-z0-9+/=]', b'', raw).rstrip(b'=')
+              clean += b'=' * ((4 - len(clean) % 4) % 4)
+              try:
+                  decoded = base64.b64decode(clean, validate=False)
+                  source = gzip.decompress(decoded)
+              except Exception as exc:
+                  raise RuntimeError(f'Cannot decode {payload}: {exc}') from exc
+              (Path('full_pipeline') / name).write_bytes(source)
+              print(f'assembled {name}: {len(source)} bytes')
+          PY
 
       - name: Commit assembled scripts
         shell: bash
