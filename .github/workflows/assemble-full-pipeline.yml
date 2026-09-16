@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'payloads/**'
+      - '.github/workflows/assemble-full-pipeline.yml'
 
 permissions:
   contents: write
@@ -26,7 +27,7 @@ jobs:
           shopt -s nullglob
           for payload in payloads/*.gz.b64; do
             filename="$(basename "$payload" .gz.b64)"
-            base64 --decode "$payload" | gzip --decompress > "full_pipeline/$filename"
+            base64 --decode --ignore-garbage "$payload" | gzip --decompress > "full_pipeline/$filename"
           done
 
       - name: Commit assembled scripts
